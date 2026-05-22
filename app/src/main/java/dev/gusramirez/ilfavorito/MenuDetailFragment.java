@@ -2,6 +2,7 @@ package dev.gusramirez.ilfavorito;
 
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
@@ -75,4 +76,13 @@ public class MenuDetailFragment extends Fragment {
 
         return binding.getRoot();
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(itemName);
+        }
+    }
+
 }

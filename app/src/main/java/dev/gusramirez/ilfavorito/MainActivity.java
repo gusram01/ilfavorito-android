@@ -10,6 +10,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.android.material.appbar.MaterialToolbar;
+
 import java.util.List;
 
 import dev.gusramirez.ilfavorito.databinding.ActivityMainBinding;
@@ -21,17 +23,35 @@ public class MainActivity extends
     private ActivityMainBinding binding;
     private FragmentManager fragmentManager;
     private FragmentContainerView fragmentContainerView;
-
+    private MaterialToolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if(!isTaskRoot()){
+            finish();
+        }
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
         fragmentManager = getSupportFragmentManager();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         fragmentContainerView = binding.mainFragmentContainerView;
+        toolbar = binding.appToolbar.getRoot();
 
+        setSupportActionBar(toolbar);
+
+        fragmentManager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+
+                boolean canGoBack = fragmentManager.getBackStackEntryCount() > 0;
+
+                if(getSupportActionBar() != null){
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(canGoBack);
+                }
+            }
+        });
 
         setContentView(binding.getRoot());
 
@@ -41,11 +61,12 @@ public class MainActivity extends
             return insets;
         });
 
-        fragmentManager.beginTransaction()
-                .replace(fragmentContainerView.getId(), new RestaurantListFragment())
-                .addToBackStack(null)
-                .setReorderingAllowed(true)
-                .commit();
+        if (savedInstanceState == null) {
+            fragmentManager.beginTransaction()
+                    .replace(fragmentContainerView.getId(), new RestaurantListFragment())
+                    .setReorderingAllowed(true)
+                    .commit();
+        }
     }
 
     @Override
@@ -83,5 +104,17 @@ public class MainActivity extends
                 .setReorderingAllowed(true)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        Boolean canGoBack = fragmentManager.getBackStackEntryCount() > 0;
+
+        if(canGoBack){
+            fragmentManager.popBackStack();
+            return true;
+        }
+
+        return super.onSupportNavigateUp();
     }
 }

@@ -5,6 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/design_default_color_primary"
     app:titleTextColor="@color/white"
+    app:navigationIconTint="@color/white"
     android:theme="@style/Theme.AppCompat.DayNight"
     app:popupTheme="@style/Theme.AppCompat.DayNight"
     app:title="Il Favorito"
