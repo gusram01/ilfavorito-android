@@ -65,6 +65,23 @@ public class MainActivity extends
 
     @Override
     public void onMenuItemSelected(MenuData.MenuItem item) {
-        System.out.println("item name::"+item.name()+"::item price::"+item.price()+"::item::description::"+item.description());
+        MenuDetailFragment fragment = MenuDetailFragment.newInstance(
+                item.name(),
+                item.price(),
+                item.description(),
+                item.imageId()
+        );
+
+        Bundle args = new Bundle();
+        args.putString("param1", item.name());
+        args.putInt("param2", item.price());
+        args.putString("param3", item.description());
+        args.putInt("param4", item.imageId());
+
+        fragmentManager.beginTransaction()
+                .replace(fragmentContainerView.getId(), fragment)
+                .setReorderingAllowed(true)
+                .addToBackStack(null)
+                .commit();
     }
 }
