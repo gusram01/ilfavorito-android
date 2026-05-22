@@ -16,7 +16,8 @@ import dev.gusramirez.ilfavorito.databinding.ActivityMainBinding;
 
 public class MainActivity extends
         AppCompatActivity implements
-        RestaurantListFragment.OnRestaurantSelectedListener, MenuCategoriesFragment.OnMenuItemSelectedListener {
+        RestaurantListFragment.OnRestaurantSelectedListener,
+        MenuItemListFragment.OnMenuItemSelectedListener {
     private ActivityMainBinding binding;
     private FragmentManager fragmentManager;
     private FragmentContainerView fragmentContainerView;
@@ -63,7 +64,7 @@ public class MainActivity extends
     }
 
     @Override
-    public void onMenuItemSelected(String mealName) {
-        System.out.println("here menu item selected:::"+mealName);
+    public void onMenuItemSelected(MenuData.MenuItem item) {
+        System.out.println("item name::"+item.name()+"::item price::"+item.price()+"::item::description::"+item.description());
     }
 }

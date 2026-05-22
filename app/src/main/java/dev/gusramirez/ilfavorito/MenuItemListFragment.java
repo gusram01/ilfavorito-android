@@ -1,13 +1,16 @@
 package dev.gusramirez.ilfavorito;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.List;
@@ -15,8 +18,14 @@ import java.util.List;
 import dev.gusramirez.ilfavorito.databinding.FragmentMenuItemListBinding;
 
 public class MenuItemListFragment extends Fragment {
+
+    public interface OnMenuItemSelectedListener {
+        void onMenuItemSelected(MenuData.MenuItem item);
+    }
+
     private static final String ARG_CATEGORY_NAME = "CATEGORY_NAME";
     private static final String ARG_RESTAURANT_NAME = "RESTAURANT_NAME";
+    private OnMenuItemSelectedListener listener;
     private FragmentMenuItemListBinding binding;
     private ListView listView;
     private MenuData.Category categoryName;
@@ -33,6 +42,16 @@ public class MenuItemListFragment extends Fragment {
         return fragment;
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        if (context instanceof OnMenuItemSelectedListener) {
+            listener = (OnMenuItemSelectedListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnMenuItemSelectedListener");
+        }
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,10 +73,19 @@ public class MenuItemListFragment extends Fragment {
         binding = FragmentMenuItemListBinding.inflate(inflater, container, false);
         listView = binding.menuItemsList;
 
-        List<MenuData.MenuItem> items = MenuData.getItems(restaurantName, categoryName);
+        List<MenuData.MenuItem> menuItems = MenuData.getItems(restaurantName, categoryName);
 
-        MenuItemArrayAdapter adapter = new MenuItemArrayAdapter(requireContext(), R.layout.menu_item_layout, items);
+        MenuItemArrayAdapter adapter = new MenuItemArrayAdapter(requireContext(), R.layout.menu_item_layout, menuItems);
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MenuData.MenuItem item = menuItems.get(position);
+
+                listener.onMenuItemSelected(item);
+            }
+        });
 
 
         return binding.getRoot();

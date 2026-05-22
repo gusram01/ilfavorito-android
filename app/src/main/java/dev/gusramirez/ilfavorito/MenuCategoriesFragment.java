@@ -24,28 +24,10 @@ public class MenuCategoriesFragment extends Fragment {
 
     public MenuCategoriesFragment() {    }
 
-    public interface OnMenuItemSelectedListener {
-        void onMenuItemSelected(String mealName);
-    }
-
     private MenuData.Restaurant restaurantName;
-    private OnMenuItemSelectedListener listener;
     private FragmentMenuCategoriesBinding binding;
     private ViewPager viewPager;
     private TabLayout tabLayout;
-
-
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-
-        if (context instanceof OnMenuItemSelectedListener) {
-            listener = (OnMenuItemSelectedListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement OnMenuItemSelectedListener");
-        }
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
