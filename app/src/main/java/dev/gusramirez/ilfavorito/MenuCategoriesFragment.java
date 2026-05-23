@@ -21,7 +21,7 @@ import java.util.List;
 
 import dev.gusramirez.ilfavorito.databinding.FragmentMenuCategoriesBinding;
 
-public class MenuCategoriesFragment extends Fragment {
+public class MenuCategoriesFragment extends Fragment implements Searchable {
 
     public MenuCategoriesFragment() {    }
 
@@ -62,6 +62,26 @@ public class MenuCategoriesFragment extends Fragment {
 
 
         return binding.getRoot();
+    }
+
+    private void forwardSearch(String query, boolean clear) {
+        int currentPosition = viewPager.getCurrentItem();
+        String tag = "android:switcher:" + viewPager.getId() + ":" + currentPosition;
+        Fragment currentTab = getChildFragmentManager().findFragmentByTag(tag);
+        if (currentTab instanceof Searchable) {
+            if (clear) ((Searchable) currentTab).onSearchCleared();
+            else ((Searchable) currentTab).onSearch(query);
+        }
+    }
+
+    @Override
+    public void onSearch(String query) {
+        forwardSearch(query, false);
+    }
+
+    @Override
+    public void onSearchCleared() {
+        forwardSearch(null, true);
     }
 
     @Override

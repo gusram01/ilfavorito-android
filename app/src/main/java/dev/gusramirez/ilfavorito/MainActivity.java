@@ -4,15 +4,20 @@ import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.appbar.MaterialToolbar;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import dev.gusramirez.ilfavorito.databinding.ActivityMainBinding;
 
@@ -23,7 +28,8 @@ public class MainActivity extends
     private ActivityMainBinding binding;
     private FragmentManager fragmentManager;
     private FragmentContainerView fragmentContainerView;
-    private MaterialToolbar toolbar;
+    private Toolbar toolbar;
+    private SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +44,7 @@ public class MainActivity extends
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         fragmentContainerView = binding.mainFragmentContainerView;
         toolbar = binding.appToolbar.getRoot();
+        searchView = toolbar.findViewById(R.id.appSearch);
 
         setSupportActionBar(toolbar);
 
@@ -62,10 +69,35 @@ public class MainActivity extends
         });
 
         if (savedInstanceState == null) {
+            RestaurantListFragment fragment = new RestaurantListFragment();
             fragmentManager.beginTransaction()
-                    .replace(fragmentContainerView.getId(), new RestaurantListFragment())
+                    .replace(fragmentContainerView.getId(), fragment)
                     .setReorderingAllowed(true)
                     .commit();
+
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
+                    if(current instanceof Searchable ){
+                        ((Searchable) current).onSearch(query);
+                    }
+
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    if(newText.isEmpty()){
+                    Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
+                        if(current instanceof Searchable ){
+                            ((Searchable) current).onSearchCleared();
+                        }
+                    }
+
+                    return true;
+                }
+            });
         }
     }
 
@@ -117,4 +149,6 @@ public class MainActivity extends
 
         return super.onSupportNavigateUp();
     }
+
+
 }

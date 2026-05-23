@@ -13,11 +13,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import dev.gusramirez.ilfavorito.databinding.FragmentMenuItemListBinding;
 
-public class MenuItemListFragment extends Fragment {
+public class MenuItemListFragment extends Fragment implements Searchable {
 
     public interface OnMenuItemSelectedListener {
         void onMenuItemSelected(MenuData.MenuItem item);
@@ -28,6 +30,7 @@ public class MenuItemListFragment extends Fragment {
     private OnMenuItemSelectedListener listener;
     private FragmentMenuItemListBinding binding;
     private ListView listView;
+    private MenuItemArrayAdapter arrayAdapter;
     private MenuData.Category categoryName;
     private MenuData.Restaurant restaurantName;
 
@@ -75,8 +78,8 @@ public class MenuItemListFragment extends Fragment {
 
         List<MenuData.MenuItem> menuItems = MenuData.getItems(restaurantName, categoryName);
 
-        MenuItemArrayAdapter adapter = new MenuItemArrayAdapter(requireContext(), R.layout.menu_item_layout, menuItems);
-        listView.setAdapter(adapter);
+        arrayAdapter = new MenuItemArrayAdapter(requireContext(), R.layout.menu_item_layout, new ArrayList<>(menuItems));
+        listView.setAdapter(arrayAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -90,6 +93,23 @@ public class MenuItemListFragment extends Fragment {
 
         return binding.getRoot();
     }
+    @Override
+    public void onSearch(String query){
+        List<MenuData.MenuItem> newItems = MenuData.getItems(restaurantName, categoryName)
+                .stream().filter(v -> v.name().toLowerCase().contains(query.toLowerCase())).collect(Collectors.toList());
 
+        updateList(newItems);
+    }
+
+    @Override
+    public void onSearchCleared(){
+        updateList(MenuData.getItems(restaurantName, categoryName));
+    }
+
+    private void updateList(List<MenuData.MenuItem> list){
+        arrayAdapter.clear();
+        arrayAdapter.addAll(list);
+        arrayAdapter.notifyDataSetChanged();
+    }
 
 }

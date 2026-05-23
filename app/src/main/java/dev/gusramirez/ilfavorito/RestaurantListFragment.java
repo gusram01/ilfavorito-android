@@ -14,11 +14,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import dev.gusramirez.ilfavorito.databinding.FragmentRestaurantListBinding;
 
-public class RestaurantListFragment extends Fragment {
+public class RestaurantListFragment extends Fragment implements Searchable {
 
     public interface OnRestaurantSelectedListener {
         void onRestaurantSelected(String key);
@@ -27,6 +29,7 @@ public class RestaurantListFragment extends Fragment {
     private OnRestaurantSelectedListener listener;
     private FragmentRestaurantListBinding binding;
     private ListView listView;
+    private ArrayAdapter<MenuData.Restaurant> arrayAdapter;
 
 
     @Override
@@ -48,8 +51,9 @@ public class RestaurantListFragment extends Fragment {
 
         List<MenuData.Restaurant> items = MenuData.RESTAURANTS;
 
-        ArrayAdapter<MenuData.Restaurant> arrayAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, items);
+        arrayAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, new ArrayList<>(items));
         listView.setAdapter(arrayAdapter);
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -69,5 +73,24 @@ public class RestaurantListFragment extends Fragment {
         if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Restaurantes");
         }
+    }
+
+    @Override
+    public void onSearch(String query){
+        List<MenuData.Restaurant> newItems = MenuData.RESTAURANTS.stream()
+                .filter(v -> v.toString().toLowerCase().contains(query.toLowerCase())).collect(Collectors.toList());
+
+        updateList(newItems);
+    }
+
+    @Override
+    public void onSearchCleared(){
+        updateList(new ArrayList<>(MenuData.RESTAURANTS));
+    }
+
+    private void updateList(List<MenuData.Restaurant> list){
+        arrayAdapter.clear();
+        arrayAdapter.addAll(list);
+        arrayAdapter.notifyDataSetChanged();
     }
 }
