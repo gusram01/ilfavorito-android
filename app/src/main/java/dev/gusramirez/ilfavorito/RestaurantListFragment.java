@@ -14,12 +14,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import dev.gusramirez.ilfavorito.data.RestaurantRepository;
 import dev.gusramirez.ilfavorito.databinding.FragmentRestaurantListBinding;
@@ -41,7 +38,7 @@ public class RestaurantListFragment extends Fragment implements Searchable {
     private RestaurantRepository repository;
     private FragmentRestaurantListBinding binding;
     private ListView listView;
-    private ArrayAdapter<Restaurant> arrayAdapter;
+    private RestaurantItemArrayAdapter arrayAdapter;
     private List<Restaurant> restaurants;
 
 
@@ -71,8 +68,7 @@ public class RestaurantListFragment extends Fragment implements Searchable {
 
         restaurants = repository.getAllRestaurants();
 
-        arrayAdapter = new ArrayAdapter<>(
-                requireContext(), android.R.layout.simple_list_item_1, restaurants);
+        arrayAdapter = new RestaurantItemArrayAdapter(requireContext(), R.layout.restaurant_item_layout, restaurants);
         listView.setAdapter(arrayAdapter);
 
         registerForContextMenu(listView);
@@ -130,7 +126,8 @@ public class RestaurantListFragment extends Fragment implements Searchable {
 
     @Override
     public void onSearchCleared() {
-        updateList(restaurants);
+        List<Restaurant> newItems = repository.getAllRestaurants();
+        updateList(newItems);
     }
 
     private void updateList(List<Restaurant> list) {
