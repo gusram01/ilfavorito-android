@@ -4,10 +4,13 @@ import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -26,10 +29,16 @@ public class RestaurantListFragment extends Fragment implements Searchable {
         void onRestaurantSelected(String key);
     }
 
-    private OnRestaurantSelectedListener listener;
+    public interface OnCategorySelectedListener{
+        void onCategorySelected(String key, int targetTabIndex);
+    }
+
+    private OnRestaurantSelectedListener restaurantSelectedListener;
+    private OnCategorySelectedListener categorySelectedListener;
     private FragmentRestaurantListBinding binding;
     private ListView listView;
     private ArrayAdapter<MenuData.Restaurant> arrayAdapter;
+    private List<MenuData.Restaurant> restaurants;
 
 
     @Override
@@ -37,9 +46,15 @@ public class RestaurantListFragment extends Fragment implements Searchable {
         super.onAttach(context);
 
         if (context instanceof OnRestaurantSelectedListener) {
-            listener = (OnRestaurantSelectedListener) context;
+            restaurantSelectedListener = (OnRestaurantSelectedListener) context;
         } else {
             throw new RuntimeException(context.toString() + " must implement OnRestaurantSelectedListener");
+        }
+
+        if(context instanceof OnCategorySelectedListener){
+            categorySelectedListener = (OnCategorySelectedListener) context;
+        }else{
+            throw new RuntimeException(context.toString() + " must implement OnCategorySelectedListener");
         }
     }
 
@@ -49,16 +64,17 @@ public class RestaurantListFragment extends Fragment implements Searchable {
         binding = FragmentRestaurantListBinding.inflate(inflater, container,false);
         listView = binding.restaurantList;
 
-        List<MenuData.Restaurant> items = MenuData.RESTAURANTS;
+         restaurants = new ArrayList<>(MenuData.RESTAURANTS);
 
-        arrayAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, new ArrayList<>(items));
+        arrayAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, new ArrayList<>(restaurants));
         listView.setAdapter(arrayAdapter);
 
+        registerForContextMenu(listView);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                listener.onRestaurantSelected(items.get(position).name());
+                restaurantSelectedListener.onRestaurantSelected(restaurants.get(position).name());
             }
         });
 
@@ -73,6 +89,28 @@ public class RestaurantListFragment extends Fragment implements Searchable {
         if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Restaurantes");
         }
+    }
+
+    @Override
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        menu.add(0,0,0, MenuData.CATEGORIES.get(0).displayName);
+        menu.add(0,1,1, MenuData.CATEGORIES.get(1).displayName);
+        menu.add(0,2,2, MenuData.CATEGORIES.get(2).displayName);
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        int idx = info.position;
+
+        if(categorySelectedListener != null){
+            categorySelectedListener.onCategorySelected( restaurants.get(idx).name(), item.getItemId());
+            return true;
+        }
+
+        return super.onContextItemSelected(item);
     }
 
     @Override

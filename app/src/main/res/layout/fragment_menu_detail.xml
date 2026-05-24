@@ -4,73 +4,103 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingVertical="28dp"
+    android:background="@android:color/white"
     android:paddingHorizontal="22dp"
+    android:paddingVertical="28dp"
     tools:context=".MenuDetailFragment">
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="165dp"
-        android:orientation="horizontal"
         android:id="@+id/menuItemHeaderContainer"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="1dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="190dp"
+        android:background="#FFF7EF"
+        android:elevation="3dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="14dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/menuItemBodyContainer"
-        >
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/menuItemImagePlaceholder"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_marginEnd="18dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
+            android:background="#FFFFFF"
+            android:contentDescription="Menu item image"
+            android:elevation="2dp"
+            android:padding="10dp"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_launcher_foreground" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:gravity="center_vertical"
             android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/menuItemDetailPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Title" />
 
             <TextView
                 android:id="@+id/menuItemDetailName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TextView" />
+                android:fontFamily="sans"
+                android:lineSpacingExtra="2dp"
+                android:text="Menu item name"
+                android:textColor="#2B2118"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/menuItemDetailPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="#2B2118"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="$120.00"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/menuItemBodyContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="22dp"
+        android:background="#FAFAFA"
+        android:elevation="2dp"
         android:orientation="vertical"
-        android:id="@+id/menuItemBodyContainer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="18dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/menuItemHeaderContainer"
-        >
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Descripción"
-        />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/menuItemHeaderContainer">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="Descripción"
+            android:textAllCaps="true"
+            android:textColor="@color/black"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/menuItemDetailDescription"
-            />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:lineSpacingExtra="5dp"
+            android:text="Descripción del platillo, ingredientes principales y detalles relevantes."
+            android:textColor="#4A4038"
+            android:textSize="16sp" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

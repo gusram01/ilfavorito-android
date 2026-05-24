@@ -5,6 +5,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:tabTextColor="@color/white"
     android:background="@color/design_default_color_primary"
+    app:tabIndicatorColor="@color/white"
+    app:tabIndicatorHeight="4dp"
+    app:tabIndicatorFullWidth="false"
     >
 
     <com.google.android.material.tabs.TabItem

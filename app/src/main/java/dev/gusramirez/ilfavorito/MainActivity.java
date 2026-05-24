@@ -24,7 +24,8 @@ import dev.gusramirez.ilfavorito.databinding.ActivityMainBinding;
 public class MainActivity extends
         AppCompatActivity implements
         RestaurantListFragment.OnRestaurantSelectedListener,
-        MenuItemListFragment.OnMenuItemSelectedListener {
+        MenuItemListFragment.OnMenuItemSelectedListener,
+        RestaurantListFragment.OnCategorySelectedListener{
     private ActivityMainBinding binding;
     private FragmentManager fragmentManager;
     private FragmentContainerView fragmentContainerView;
@@ -107,6 +108,23 @@ public class MainActivity extends
 
         Bundle args = new Bundle();
         args.putString("RESTAURANT_NAME", key);
+        args.putInt("CATEGORY_INDEX", 0);
+        fragment.setArguments(args);
+
+        fragmentManager.beginTransaction()
+                .replace(fragmentContainerView.getId(),fragment)
+                .setReorderingAllowed(true)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onCategorySelected(String key, int targetTabIndex){
+        MenuCategoriesFragment fragment = new MenuCategoriesFragment();
+
+        Bundle args = new Bundle();
+        args.putString("RESTAURANT_NAME", key);
+        args.putInt("CATEGORY_INDEX", targetTabIndex);
         fragment.setArguments(args);
 
         fragmentManager.beginTransaction()

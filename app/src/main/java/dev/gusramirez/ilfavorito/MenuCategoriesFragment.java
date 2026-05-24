@@ -26,6 +26,7 @@ public class MenuCategoriesFragment extends Fragment implements Searchable {
     public MenuCategoriesFragment() {    }
 
     private MenuData.Restaurant restaurantName;
+    private int selectedTabIndex;
     private FragmentMenuCategoriesBinding binding;
     private ViewPager viewPager;
     private TabLayout tabLayout;
@@ -36,6 +37,7 @@ public class MenuCategoriesFragment extends Fragment implements Searchable {
 
         if(getArguments() != null){
             String restaurantArg = getArguments().getString("RESTAURANT_NAME");
+            selectedTabIndex = getArguments().getInt("CATEGORY_INDEX");
             restaurantName = MenuData.Restaurant.valueOf(restaurantArg);
         }
     }
@@ -60,6 +62,9 @@ public class MenuCategoriesFragment extends Fragment implements Searchable {
 
         tabLayout.setupWithViewPager(viewPager);
 
+        if(getArguments() != null){
+            viewPager.setCurrentItem(selectedTabIndex);
+        }
 
         return binding.getRoot();
     }
