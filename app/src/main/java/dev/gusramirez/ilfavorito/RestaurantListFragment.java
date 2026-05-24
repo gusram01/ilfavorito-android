@@ -21,7 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dev.gusramirez.ilfavorito.data.RestaurantRepository;
 import dev.gusramirez.ilfavorito.databinding.FragmentRestaurantListBinding;
+import dev.gusramirez.ilfavorito.domain.Category;
+import dev.gusramirez.ilfavorito.domain.Restaurant;
 
 public class RestaurantListFragment extends Fragment implements Searchable {
 
@@ -29,16 +32,17 @@ public class RestaurantListFragment extends Fragment implements Searchable {
         void onRestaurantSelected(String key);
     }
 
-    public interface OnCategorySelectedListener{
+    public interface OnCategorySelectedListener {
         void onCategorySelected(String key, int targetTabIndex);
     }
 
     private OnRestaurantSelectedListener restaurantSelectedListener;
     private OnCategorySelectedListener categorySelectedListener;
+    private RestaurantRepository repository;
     private FragmentRestaurantListBinding binding;
     private ListView listView;
-    private ArrayAdapter<MenuData.Restaurant> arrayAdapter;
-    private List<MenuData.Restaurant> restaurants;
+    private ArrayAdapter<Restaurant> arrayAdapter;
+    private List<Restaurant> restaurants;
 
 
     @Override
@@ -51,9 +55,9 @@ public class RestaurantListFragment extends Fragment implements Searchable {
             throw new RuntimeException(context.toString() + " must implement OnRestaurantSelectedListener");
         }
 
-        if(context instanceof OnCategorySelectedListener){
+        if (context instanceof OnCategorySelectedListener) {
             categorySelectedListener = (OnCategorySelectedListener) context;
-        }else{
+        } else {
             throw new RuntimeException(context.toString() + " must implement OnCategorySelectedListener");
         }
     }
@@ -61,12 +65,14 @@ public class RestaurantListFragment extends Fragment implements Searchable {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        binding = FragmentRestaurantListBinding.inflate(inflater, container,false);
+        repository = new RestaurantRepository(requireContext());
+        binding = FragmentRestaurantListBinding.inflate(inflater, container, false);
         listView = binding.restaurantList;
 
-         restaurants = new ArrayList<>(MenuData.RESTAURANTS);
+        restaurants = repository.getAllRestaurants();
 
-        arrayAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, new ArrayList<>(restaurants));
+        arrayAdapter = new ArrayAdapter<>(
+                requireContext(), android.R.layout.simple_list_item_1, restaurants);
         listView.setAdapter(arrayAdapter);
 
         registerForContextMenu(listView);
@@ -95,9 +101,11 @@ public class RestaurantListFragment extends Fragment implements Searchable {
     public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
-        menu.add(0,0,0, MenuData.CATEGORIES.get(0).displayName);
-        menu.add(0,1,1, MenuData.CATEGORIES.get(1).displayName);
-        menu.add(0,2,2, MenuData.CATEGORIES.get(2).displayName);
+        List<Category> categories = repository.getAllCategories();
+
+        menu.add(0, 0, 0, categories.get(0).type());
+        menu.add(0, 1, 1, categories.get(1).type());
+        menu.add(0, 2, 2, categories.get(2).type());
     }
 
     @Override
@@ -105,8 +113,8 @@ public class RestaurantListFragment extends Fragment implements Searchable {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         int idx = info.position;
 
-        if(categorySelectedListener != null){
-            categorySelectedListener.onCategorySelected( restaurants.get(idx).name(), item.getItemId());
+        if (categorySelectedListener != null) {
+            categorySelectedListener.onCategorySelected(restaurants.get(idx).name(), item.getItemId());
             return true;
         }
 
@@ -114,19 +122,18 @@ public class RestaurantListFragment extends Fragment implements Searchable {
     }
 
     @Override
-    public void onSearch(String query){
-        List<MenuData.Restaurant> newItems = MenuData.RESTAURANTS.stream()
-                .filter(v -> v.toString().toLowerCase().contains(query.toLowerCase())).collect(Collectors.toList());
+    public void onSearch(String query) {
+        List<Restaurant> newItems = repository.getRestaurantByKindOfName(query);
 
         updateList(newItems);
     }
 
     @Override
-    public void onSearchCleared(){
-        updateList(new ArrayList<>(MenuData.RESTAURANTS));
+    public void onSearchCleared() {
+        updateList(restaurants);
     }
 
-    private void updateList(List<MenuData.Restaurant> list){
+    private void updateList(List<Restaurant> list) {
         arrayAdapter.clear();
         arrayAdapter.addAll(list);
         arrayAdapter.notifyDataSetChanged();

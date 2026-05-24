@@ -44,6 +44,8 @@ public class MainActivity extends
 
         fragmentManager = getSupportFragmentManager();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
         fragmentContainerView = binding.mainFragmentContainerView;
         toolbar = binding.appToolbar.getRoot();
         searchView = toolbar.findViewById(R.id.appSearch);
@@ -63,7 +65,6 @@ public class MainActivity extends
             }
         });
 
-        setContentView(binding.getRoot());
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
