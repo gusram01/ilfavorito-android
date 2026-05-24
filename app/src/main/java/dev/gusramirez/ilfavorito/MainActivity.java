@@ -1,6 +1,7 @@
 package dev.gusramirez.ilfavorito;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -52,12 +53,13 @@ public class MainActivity extends
         fragmentManager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
-
                 boolean canGoBack = fragmentManager.getBackStackEntryCount() > 0;
 
                 if(getSupportActionBar() != null){
                     getSupportActionBar().setDisplayHomeAsUpEnabled(canGoBack);
                 }
+
+                updateSearchVisibility();
             }
         });
 
@@ -154,6 +156,11 @@ public class MainActivity extends
                 .setReorderingAllowed(true)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void updateSearchVisibility() {
+        Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
+        searchView.setVisibility(current instanceof Searchable ? View.VISIBLE : View.GONE);
     }
 
     @Override
