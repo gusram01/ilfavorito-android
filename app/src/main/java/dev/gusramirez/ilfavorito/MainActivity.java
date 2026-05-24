@@ -1,11 +1,13 @@
 package dev.gusramirez.ilfavorito;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.SearchView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -31,7 +33,7 @@ public class MainActivity extends
     private FragmentManager fragmentManager;
     private FragmentContainerView fragmentContainerView;
     private Toolbar toolbar;
-    private SearchView searchView;
+    private android.widget.SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class MainActivity extends
 
         fragmentContainerView = binding.mainFragmentContainerView;
         toolbar = binding.appToolbar.getRoot();
-        searchView = toolbar.findViewById(R.id.appSearch);
+//        searchView = toolbar.findViewById(R.id.app_bar_search);
 
         setSupportActionBar(toolbar);
 
@@ -79,29 +81,6 @@ public class MainActivity extends
                     .setReorderingAllowed(true)
                     .commit();
 
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
-                    if(current instanceof Searchable ){
-                        ((Searchable) current).onSearch(query);
-                    }
-
-                    return true;
-                }
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    if(newText.isEmpty()){
-                    Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
-                        if(current instanceof Searchable ){
-                            ((Searchable) current).onSearchCleared();
-                        }
-                    }
-
-                    return true;
-                }
-            });
         }
     }
 
@@ -176,5 +155,41 @@ public class MainActivity extends
         return super.onSupportNavigateUp();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(
+                R.menu.app_menu,
+                menu
+        );
+        MenuItem searchItem = menu.findItem(R.id.app_bar_search);
 
+        searchView = (android.widget.SearchView) searchItem.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
+                if(current instanceof Searchable ){
+                    ((Searchable) current).onSearch(query);
+                }
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if(newText.isEmpty()){
+                    Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
+                    if(current instanceof Searchable ){
+                        ((Searchable) current).onSearchCleared();
+                    }
+                }
+
+                return true;
+            }
+        });
+
+
+        return true;
+    }
 }
