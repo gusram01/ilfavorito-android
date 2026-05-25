@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import dev.gusramirez.ilfavorito.databinding.FragmentMenuDetailBinding;
 
 public class MenuDetailFragment extends Fragment {
@@ -20,12 +18,12 @@ public class MenuDetailFragment extends Fragment {
     private static final String ARG_NAME = "param1";
     private static final String ARG_PRICE = "param2";
     private static final String ARG_DESCRIPTION = "param3";
-    private static final String ARG_IMAGE = "param4";
+    private static final String ARG_IMG_RESOURCE_ID = "param4";
 
     private String itemName;
-    private int itemPrice;
+    private double itemPrice;
     private String itemDesc;
-    private int itemImageId;
+    private int itemImgResourceId;
 
     private FragmentMenuDetailBinding binding;
     private TextView name;
@@ -36,13 +34,13 @@ public class MenuDetailFragment extends Fragment {
 
     public MenuDetailFragment() {}
 
-    public static MenuDetailFragment newInstance(String name, int price, String description, int imageId) {
+    public static MenuDetailFragment newInstance(String name, double price, String description, int imageResourceId) {
         MenuDetailFragment fragment = new MenuDetailFragment();
         Bundle args = new Bundle();
         args.putString(ARG_NAME, name);
-        args.putInt(ARG_PRICE, price);
+        args.putDouble(ARG_PRICE, price);
         args.putString(ARG_DESCRIPTION, description);
-        args.putInt(ARG_IMAGE, imageId);
+        args.putInt(ARG_IMG_RESOURCE_ID, imageResourceId);
 
         fragment.setArguments(args);
         return fragment;
@@ -53,9 +51,9 @@ public class MenuDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             itemName = getArguments().getString(ARG_NAME);
-            itemPrice = getArguments().getInt(ARG_PRICE);
+            itemPrice = getArguments().getDouble(ARG_PRICE);
             itemDesc = getArguments().getString(ARG_DESCRIPTION);
-            itemImageId = getArguments().getInt(ARG_IMAGE);
+            itemImgResourceId = getArguments().getInt(ARG_IMG_RESOURCE_ID);
         }
     }
 
@@ -69,9 +67,9 @@ public class MenuDetailFragment extends Fragment {
 
 
         name.setText(itemName);
-        price.setText(String.format("$%d", itemPrice));
+        price.setText(String.format("$%.2f", itemPrice));
         description.setText(itemDesc);
-        image.setImageResource(itemImageId);
+        image.setImageResource(itemImgResourceId);
 
 
         return binding.getRoot();
@@ -84,5 +82,4 @@ public class MenuDetailFragment extends Fragment {
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(itemName);
         }
     }
-
 }

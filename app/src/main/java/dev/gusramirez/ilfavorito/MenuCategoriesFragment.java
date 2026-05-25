@@ -1,9 +1,7 @@
 package dev.gusramirez.ilfavorito;
 
-import android.content.Context;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -19,26 +17,32 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
 
+import dev.gusramirez.ilfavorito.data.RestaurantRepository;
 import dev.gusramirez.ilfavorito.databinding.FragmentMenuCategoriesBinding;
+import dev.gusramirez.ilfavorito.domain.Category;
+import dev.gusramirez.ilfavorito.domain.Restaurant;
 
 public class MenuCategoriesFragment extends Fragment implements Searchable {
 
-    public MenuCategoriesFragment() {    }
+    private RestaurantRepository repository;
 
-    private MenuData.Restaurant restaurantName;
-    private int selectedTabIndex;
     private FragmentMenuCategoriesBinding binding;
     private ViewPager viewPager;
     private TabLayout tabLayout;
+    private int selectedRestaurantId;
+    private int selectedCategoryTabIndex;
+    private Restaurant restaurant;
+
+    public MenuCategoriesFragment() {
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(getArguments() != null){
-            String restaurantArg = getArguments().getString("RESTAURANT_NAME");
-            selectedTabIndex = getArguments().getInt("CATEGORY_INDEX");
-            restaurantName = MenuData.Restaurant.valueOf(restaurantArg);
+        if (getArguments() != null) {
+            selectedRestaurantId = getArguments().getInt("RESTAURANT_ID");
+            selectedCategoryTabIndex = getArguments().getInt("CATEGORY_TAB_INDEX");
         }
     }
 
@@ -46,24 +50,26 @@ public class MenuCategoriesFragment extends Fragment implements Searchable {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        repository = new RestaurantRepository(requireContext());
         binding = FragmentMenuCategoriesBinding.inflate(inflater, container, false);
         viewPager = binding.categoriesViewPager;
         tabLayout = binding.categoriesTabsLabels.getRoot();
 
-        List<MenuData.Category> categories = MenuData.CATEGORIES;
+        List<Category> categories = repository.getAllCategories();
+        restaurant = repository.getOneRestaurantById(selectedRestaurantId);
 
         PagerAdapter pagerAdapter = new MenuItemsByCategoryPageAdapter(
                 getChildFragmentManager(),
                 FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,
-                restaurantName,
+                selectedRestaurantId,
                 categories
-                );
+        );
         viewPager.setAdapter(pagerAdapter);
 
         tabLayout.setupWithViewPager(viewPager);
 
-        if(getArguments() != null){
-            viewPager.setCurrentItem(selectedTabIndex);
+        if (getArguments() != null) {
+            viewPager.setCurrentItem(selectedCategoryTabIndex);
         }
 
         return binding.getRoot();
@@ -94,7 +100,7 @@ public class MenuCategoriesFragment extends Fragment implements Searchable {
         super.onResume();
 
         if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(restaurantName.toString());
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(restaurant != null ? restaurant.name() : "Lista de restaurantes");
         }
     }
 }

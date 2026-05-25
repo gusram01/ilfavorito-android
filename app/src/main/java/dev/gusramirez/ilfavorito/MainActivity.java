@@ -3,7 +3,6 @@ package dev.gusramirez.ilfavorito;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.SearchView;
 
 import androidx.activity.EdgeToEdge;
@@ -23,7 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dev.gusramirez.ilfavorito.data.RestaurantRepository;
 import dev.gusramirez.ilfavorito.databinding.ActivityMainBinding;
+import dev.gusramirez.ilfavorito.domain.Category;
+import dev.gusramirez.ilfavorito.domain.Food;
 
 public class MainActivity extends
         AppCompatActivity implements
@@ -31,12 +33,15 @@ public class MainActivity extends
         MenuItemListFragment.OnMenuItemSelectedListener,
         RestaurantListFragment.OnCategorySelectedListener,
         RestaurantFormFragment.OnManageableEventListener {
+    private RestaurantRepository repository;
     private ActivityMainBinding binding;
     private FragmentManager fragmentManager;
     private FragmentContainerView fragmentContainerView;
     private Toolbar toolbar;
     private android.widget.SearchView searchView;
+    private MenuItem searchItem;
     private MenuItem newItemButton;
+    private List<Category> categories;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +55,13 @@ public class MainActivity extends
         fragmentManager = getSupportFragmentManager();
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        repository = new RestaurantRepository(getApplicationContext());
 
         fragmentContainerView = binding.mainFragmentContainerView;
         toolbar = binding.appToolbar.getRoot();
 
         setSupportActionBar(toolbar);
+        categories = repository.getAllCategories();
 
         fragmentManager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
@@ -88,12 +95,12 @@ public class MainActivity extends
     }
 
     @Override
-    public void onRestaurantSelected(String key) {
+    public void onRestaurantSelected(int restaurantId) {
         MenuCategoriesFragment fragment = new MenuCategoriesFragment();
 
         Bundle args = new Bundle();
-        args.putString("RESTAURANT_NAME", key);
-        args.putInt("CATEGORY_INDEX", 0);
+        args.putInt("RESTAURANT_ID", restaurantId);
+        args.putInt("CATEGORY_TAB_INDEX", 0);
         fragment.setArguments(args);
 
         fragmentManager.beginTransaction()
@@ -104,12 +111,13 @@ public class MainActivity extends
     }
 
     @Override
-    public void onCategorySelected(String key, int targetTabIndex){
+    public void onCategorySelected(int restaurantId, int targetTabIndex){
         MenuCategoriesFragment fragment = new MenuCategoriesFragment();
 
+
         Bundle args = new Bundle();
-        args.putString("RESTAURANT_NAME", key);
-        args.putInt("CATEGORY_INDEX", targetTabIndex);
+        args.putInt("RESTAURANT_ID", restaurantId);
+        args.putInt("CATEGORY_TAB_INDEX", targetTabIndex);
         fragment.setArguments(args);
 
         fragmentManager.beginTransaction()
@@ -120,19 +128,25 @@ public class MainActivity extends
     }
 
     @Override
-    public void onMenuItemSelected(MenuData.MenuItem item) {
+    public void onMenuItemSelected(Food item) {
+        String type = repository.getCategoryTypeById(item.categoryId());
+
+        int imgResourceId = switch (type){
+            case "food":
+                yield R.mipmap.ic_food_placeholder;
+            case "drink":
+                yield R.mipmap.ic_beverage_placeholder;
+            case "complement":
+            default:
+                yield R.mipmap.ic_complement_placeholder;
+        };
+
         MenuDetailFragment fragment = MenuDetailFragment.newInstance(
                 item.name(),
                 item.price(),
                 item.description(),
-                item.imageId()
+                imgResourceId
         );
-
-        Bundle args = new Bundle();
-        args.putString("param1", item.name());
-        args.putInt("param2", item.price());
-        args.putString("param3", item.description());
-        args.putInt("param4", item.imageId());
 
         fragmentManager.beginTransaction()
                 .replace(fragmentContainerView.getId(), fragment)
@@ -160,7 +174,7 @@ public class MainActivity extends
                 R.menu.app_menu,
                 menu
         );
-        MenuItem searchItem = menu.findItem(R.id.app_bar_search);
+        searchItem = menu.findItem(R.id.app_bar_search);
         newItemButton = menu.findItem(R.id.app_new_item);
 
         newItemButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
@@ -207,6 +221,7 @@ public class MainActivity extends
             }
         });
 
+        updateSearchVisibility();
         return true;
     }
 
@@ -221,8 +236,9 @@ public class MainActivity extends
     }
 
     private void updateSearchVisibility() {
+        if (searchItem == null) return;
         Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
-        searchView.setVisibility(current instanceof Searchable ? View.VISIBLE : View.GONE);
+        searchItem.setVisible(current instanceof Searchable);
     }
 
     private void updateNewButtonVisibility(){

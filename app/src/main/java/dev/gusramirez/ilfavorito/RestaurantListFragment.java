@@ -27,11 +27,11 @@ public class RestaurantListFragment extends Fragment
         implements Searchable, Manageable<Restaurant> {
 
     public interface OnRestaurantSelectedListener {
-        void onRestaurantSelected(String key);
+        void onRestaurantSelected(int restaurantId);
     }
 
     public interface OnCategorySelectedListener {
-        void onCategorySelected(String key, int targetTabIndex);
+        void onCategorySelected(int restaurantId, int targetTabIndex);
     }
 
     private OnRestaurantSelectedListener restaurantSelectedListener;
@@ -77,7 +77,7 @@ public class RestaurantListFragment extends Fragment
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                restaurantSelectedListener.onRestaurantSelected(restaurants.get(position).name());
+                restaurantSelectedListener.onRestaurantSelected(restaurants.get(position)._id());
             }
         });
 
@@ -111,7 +111,7 @@ public class RestaurantListFragment extends Fragment
         int idx = info.position;
 
         if (categorySelectedListener != null) {
-            categorySelectedListener.onCategorySelected(restaurants.get(idx).name(), item.getItemId());
+            categorySelectedListener.onCategorySelected(restaurants.get(idx)._id(), item.getItemId());
             return true;
         }
 

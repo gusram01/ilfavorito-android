@@ -13,16 +13,18 @@ import com.google.android.material.textview.MaterialTextView;
 
 import java.util.List;
 
-public class MenuItemArrayAdapter extends ArrayAdapter<MenuData.MenuItem> {
+import dev.gusramirez.ilfavorito.domain.Food;
 
-    public MenuItemArrayAdapter(@NonNull Context context, int resource, @NonNull List<MenuData.MenuItem> objects) {
+public class MenuItemArrayAdapter extends ArrayAdapter<Food> {
+
+    public MenuItemArrayAdapter(@NonNull Context context, int resource, @NonNull List<Food> objects) {
         super(context, resource, objects);
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        MenuData.MenuItem item = getItem(position);
+        Food item = getItem(position);
 
         if(convertView == null){
             convertView = LayoutInflater.from(getContext())
@@ -33,7 +35,7 @@ public class MenuItemArrayAdapter extends ArrayAdapter<MenuData.MenuItem> {
         MaterialTextView price = convertView.findViewById(R.id.menuItemCustom02);
 
         title.setText(item.name());
-        price.setText(String.format("$%d", item.price()));
+        price.setText(String.format("$%.2f", item.price()));
 
         return  convertView;
     }

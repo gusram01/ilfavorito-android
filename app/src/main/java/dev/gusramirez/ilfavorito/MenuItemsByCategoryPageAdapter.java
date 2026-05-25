@@ -10,21 +10,24 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 import java.util.List;
 
-public class MenuItemsByCategoryPageAdapter extends FragmentPagerAdapter {
-    private List<MenuData.Category> categories;
-    private MenuData.Restaurant restaurant;
+import dev.gusramirez.ilfavorito.domain.Category;
+import dev.gusramirez.ilfavorito.domain.Restaurant;
 
-    public MenuItemsByCategoryPageAdapter(@NonNull FragmentManager fm, int behavior, MenuData.Restaurant restaurantArg, List<MenuData.Category> categoriesArg) {
+public class MenuItemsByCategoryPageAdapter extends FragmentPagerAdapter {
+    private List<Category> categories;
+    private int selectedRestaurantId;
+
+    public MenuItemsByCategoryPageAdapter(@NonNull FragmentManager fm, int behavior, int restaurantIdArg, List<Category> categoriesArg) {
         super(fm, behavior);
-        restaurant = restaurantArg;
+        selectedRestaurantId = restaurantIdArg;
         categories = categoriesArg;
     }
 
     @NonNull
     @Override
     public Fragment getItem(int position) {
-        MenuData.Category category = categories.get(position);
-        return MenuItemListFragment.newInstance(restaurant, category);
+        Category category = categories.get(position);
+        return MenuItemListFragment.newInstance(selectedRestaurantId, category._id());
     }
 
     @Override
@@ -35,6 +38,6 @@ public class MenuItemsByCategoryPageAdapter extends FragmentPagerAdapter {
     @Nullable
     @Override
     public CharSequence getPageTitle(int position) {
-        return categories.get(position).toString();
+        return categories.get(position).type();
     }
 }
