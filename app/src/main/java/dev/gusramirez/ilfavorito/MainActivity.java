@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.SearchView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
@@ -28,12 +29,14 @@ public class MainActivity extends
         AppCompatActivity implements
         RestaurantListFragment.OnRestaurantSelectedListener,
         MenuItemListFragment.OnMenuItemSelectedListener,
-        RestaurantListFragment.OnCategorySelectedListener{
+        RestaurantListFragment.OnCategorySelectedListener,
+        RestaurantFormFragment.OnManageableEventListener {
     private ActivityMainBinding binding;
     private FragmentManager fragmentManager;
     private FragmentContainerView fragmentContainerView;
     private Toolbar toolbar;
     private android.widget.SearchView searchView;
+    private MenuItem newItemButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +53,6 @@ public class MainActivity extends
 
         fragmentContainerView = binding.mainFragmentContainerView;
         toolbar = binding.appToolbar.getRoot();
-//        searchView = toolbar.findViewById(R.id.app_bar_search);
 
         setSupportActionBar(toolbar);
 
@@ -64,6 +66,7 @@ public class MainActivity extends
                 }
 
                 updateSearchVisibility();
+                updateNewButtonVisibility();
             }
         });
 
@@ -138,10 +141,6 @@ public class MainActivity extends
                 .commit();
     }
 
-    private void updateSearchVisibility() {
-        Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
-        searchView.setVisibility(current instanceof Searchable ? View.VISIBLE : View.GONE);
-    }
 
     @Override
     public boolean onSupportNavigateUp() {
@@ -162,6 +161,25 @@ public class MainActivity extends
                 menu
         );
         MenuItem searchItem = menu.findItem(R.id.app_bar_search);
+        newItemButton = menu.findItem(R.id.app_new_item);
+
+        newItemButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(@NonNull MenuItem item) {
+                Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
+
+                if(current instanceof Manageable<?>){
+                    Fragment frag = ((Manageable<?>) current).onCreateEntity();
+                    fragmentManager.beginTransaction()
+                            .replace(fragmentContainerView.getId(), frag)
+                            .addToBackStack(null)
+                            .setReorderingAllowed(true)
+                            .commit();
+                }
+
+                return true;
+            }
+        });
 
         searchView = (android.widget.SearchView) searchItem.getActionView();
 
@@ -190,5 +208,25 @@ public class MainActivity extends
         });
 
         return true;
+    }
+
+    @Override
+    public void onCreateItem(){
+        RestaurantListFragment fragment = new RestaurantListFragment();
+        fragmentManager.beginTransaction()
+                .replace(fragmentContainerView.getId(), fragment)
+                .setReorderingAllowed(true)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void updateSearchVisibility() {
+        Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
+        searchView.setVisibility(current instanceof Searchable ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateNewButtonVisibility(){
+        Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
+        newItemButton.setVisible(current instanceof Manageable<?>);
     }
 }

@@ -23,7 +23,8 @@ import dev.gusramirez.ilfavorito.databinding.FragmentRestaurantListBinding;
 import dev.gusramirez.ilfavorito.domain.Category;
 import dev.gusramirez.ilfavorito.domain.Restaurant;
 
-public class RestaurantListFragment extends Fragment implements Searchable {
+public class RestaurantListFragment extends Fragment
+        implements Searchable, Manageable<Restaurant> {
 
     public interface OnRestaurantSelectedListener {
         void onRestaurantSelected(String key);
@@ -128,6 +129,21 @@ public class RestaurantListFragment extends Fragment implements Searchable {
     public void onSearchCleared() {
         List<Restaurant> newItems = repository.getAllRestaurants();
         updateList(newItems);
+    }
+
+    @Override
+    public Fragment onCreateEntity() {
+        return RestaurantFormFragment.newInstance();
+    }
+
+    @Override
+    public void onEditEntity(Restaurant item) {
+
+    }
+
+    @Override
+    public void onDeleteEntity(Restaurant item) {
+
     }
 
     private void updateList(List<Restaurant> list) {

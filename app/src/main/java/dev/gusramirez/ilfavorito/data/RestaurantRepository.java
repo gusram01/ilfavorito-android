@@ -1,8 +1,11 @@
 package dev.gusramirez.ilfavorito.data;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +76,22 @@ public class RestaurantRepository {
             }
         }
         return restaurants;
+    }
+
+    public int addOneRestaurant(Restaurant restaurant) throws Throwable {
+        SQLiteDatabase db = dbManager.getWritableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(EntityInitializer.RestaurantEntity.COL_REST_NAME, restaurant.name());
+
+        long newRowId = db.insert(EntityInitializer.RestaurantEntity.TABLE_NAME, null, contentValues);
+
+        if(newRowId == -1){
+            throw new Throwable("Algo salío mal, intente nuevamente.");
+        }
+
+        return (int) newRowId;
     }
 
     public List<Category> getAllCategories() {

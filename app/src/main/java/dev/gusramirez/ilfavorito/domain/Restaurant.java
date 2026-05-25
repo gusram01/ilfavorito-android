@@ -1,4 +1,9 @@
 package dev.gusramirez.ilfavorito.domain;
 
-public record Restaurant(int _id, String name) {
+import java.util.Optional;
+
+public record Restaurant(Integer _id, String name) {
+    Optional<Integer> get_id(){
+        return Optional.ofNullable(_id);
+    }
 }
