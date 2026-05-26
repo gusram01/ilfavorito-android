@@ -33,7 +33,9 @@ public class MainActivity extends
         MenuItemListFragment.OnMenuItemSelectedListener,
         RestaurantListFragment.OnCategorySelectedListener,
         RestaurantListFragment.OnEditRestaurantListener,
-        RestaurantFormFragment.OnManageableEventListener {
+        RestaurantFormFragment.OnManageableEventListener,
+        MenuItemFormFragment.OnMenuItemFormEventListener,
+        MenuCategoriesFragment.OnEditMenuItemListener {
     private RestaurantRepository repository;
     private ActivityMainBinding binding;
     private FragmentManager fragmentManager;
@@ -255,6 +257,30 @@ public class MainActivity extends
     @Override
     public void onDeleteItem() {
         fragmentManager.popBackStack();
+    }
+
+    @Override
+    public void onMenuItemCreated() {
+        fragmentManager.popBackStack();
+    }
+
+    @Override
+    public void onMenuItemEdited() {
+        fragmentManager.popBackStack();
+    }
+
+    @Override
+    public void onMenuItemDeleted() {
+        fragmentManager.popBackStack();
+    }
+
+    @Override
+    public void onEditMenuItem(Fragment formFragment) {
+        fragmentManager.beginTransaction()
+                .replace(fragmentContainerView.getId(), formFragment)
+                .setReorderingAllowed(true)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void updateSearchVisibility() {

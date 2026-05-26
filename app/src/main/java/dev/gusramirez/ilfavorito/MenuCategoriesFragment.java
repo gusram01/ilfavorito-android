@@ -1,7 +1,9 @@
 package dev.gusramirez.ilfavorito;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -20,20 +22,37 @@ import java.util.List;
 import dev.gusramirez.ilfavorito.data.RestaurantRepository;
 import dev.gusramirez.ilfavorito.databinding.FragmentMenuCategoriesBinding;
 import dev.gusramirez.ilfavorito.domain.Category;
+import dev.gusramirez.ilfavorito.domain.Food;
 import dev.gusramirez.ilfavorito.domain.Restaurant;
 
-public class MenuCategoriesFragment extends Fragment implements Searchable {
+public class MenuCategoriesFragment extends Fragment
+        implements Searchable, Manageable<Food>, MenuItemListFragment.OnEditMenuItemListener {
+
+    public interface OnEditMenuItemListener {
+        void onEditMenuItem(Fragment formFragment);
+    }
 
     private RestaurantRepository repository;
-
     private FragmentMenuCategoriesBinding binding;
     private ViewPager viewPager;
     private TabLayout tabLayout;
     private int selectedRestaurantId;
     private int selectedCategoryTabIndex;
     private Restaurant restaurant;
+    private List<Category> categories;
+    private OnEditMenuItemListener editMenuItemListener;
 
     public MenuCategoriesFragment() {
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof OnEditMenuItemListener) {
+            editMenuItemListener = (OnEditMenuItemListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement MenuCategoriesFragment.OnEditMenuItemListener");
+        }
     }
 
     @Override
@@ -55,7 +74,7 @@ public class MenuCategoriesFragment extends Fragment implements Searchable {
         viewPager = binding.categoriesViewPager;
         tabLayout = binding.categoriesTabsLabels.getRoot();
 
-        List<Category> categories = repository.getAllCategories();
+        categories = repository.getAllCategories();
         restaurant = repository.getOneRestaurantById(selectedRestaurantId);
 
         PagerAdapter pagerAdapter = new MenuItemsByCategoryPageAdapter(
@@ -73,6 +92,39 @@ public class MenuCategoriesFragment extends Fragment implements Searchable {
         }
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(restaurant != null ? restaurant.name() : "Lista de restaurantes");
+        }
+    }
+
+    @Override
+    public Fragment onCreateEntity() {
+        int activeCategoryId = categories.get(viewPager.getCurrentItem())._id();
+        return MenuItemFormFragment.newInstance(selectedRestaurantId, activeCategoryId);
+    }
+
+    @Override
+    public Fragment onEditEntity(Food item) {
+        return MenuItemFormFragment.newInstance(
+                item._id(), item.name(), item.price(), item.description(),
+                item.restaurantId(), item.categoryId());
+    }
+
+    @Override
+    public void onDeleteEntity(Food item) {
+    }
+
+    @Override
+    public void onEditMenuItem(Fragment formFragment) {
+        if (editMenuItemListener != null) {
+            editMenuItemListener.onEditMenuItem(formFragment);
+        }
     }
 
     private void forwardSearch(String query, boolean clear) {
@@ -93,14 +145,5 @@ public class MenuCategoriesFragment extends Fragment implements Searchable {
     @Override
     public void onSearchCleared() {
         forwardSearch(null, true);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(restaurant != null ? restaurant.name() : "Lista de restaurantes");
-        }
     }
 }

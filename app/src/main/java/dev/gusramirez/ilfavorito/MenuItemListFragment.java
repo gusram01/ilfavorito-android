@@ -7,35 +7,46 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import dev.gusramirez.ilfavorito.data.RestaurantRepository;
 import dev.gusramirez.ilfavorito.databinding.FragmentMenuItemListBinding;
 import dev.gusramirez.ilfavorito.domain.Food;
 
-public class MenuItemListFragment extends Fragment implements Searchable {
+public class MenuItemListFragment extends Fragment
+        implements Searchable, Manageable<Food> {
 
     public interface OnMenuItemSelectedListener {
         void onMenuItemSelected(Food item);
     }
 
+    public interface OnEditMenuItemListener {
+        void onEditMenuItem(Fragment formFragment);
+    }
+
     private static final String ARG_CATEGORY_ID = "CATEGORY_ID";
     private static final String ARG_RESTAURANT_ID = "RESTAURANT_ID";
+    private static final int MENU_EDIT_ID = 2000;
+
     private RestaurantRepository repository;
     private OnMenuItemSelectedListener listener;
+    private OnEditMenuItemListener editMenuItemListener;
     private FragmentMenuItemListBinding binding;
     private ListView listView;
     private MenuItemArrayAdapter arrayAdapter;
+    private List<Food> menuItems;
     private int categoryId;
     private int restaurantId;
+    private int selectedPosition = -1;
 
     private MenuItemListFragment() {
     }
@@ -60,6 +71,11 @@ public class MenuItemListFragment extends Fragment implements Searchable {
         } else {
             throw new RuntimeException(context.toString() + " must implement OnMenuItemSelectedListener");
         }
+
+        Fragment parent = getParentFragment();
+        if (parent instanceof OnEditMenuItemListener) {
+            editMenuItemListener = (OnEditMenuItemListener) parent;
+        }
     }
 
     @Override
@@ -73,36 +89,61 @@ public class MenuItemListFragment extends Fragment implements Searchable {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         repository = new RestaurantRepository(requireContext());
         binding = FragmentMenuItemListBinding.inflate(inflater, container, false);
         listView = binding.menuItemsList;
 
-        List<Food> menuItems = repository.getAllFoodsByRestaurantIdAndCategoryId(restaurantId, categoryId);
+        loadItems();
 
-        arrayAdapter = new MenuItemArrayAdapter(requireContext(), R.layout.menu_item_layout, menuItems);
-        listView.setAdapter(arrayAdapter);
+        registerForContextMenu(listView);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Food item = menuItems.get(position);
-
-                listener.onMenuItemSelected(item);
-            }
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            Food item = menuItems.get(position);
+            listener.onMenuItemSelected(item);
         });
-
 
         return binding.getRoot();
     }
 
     @Override
-    public void onSearch(String query) {
-        List<Food> newItems = repository.getAllFoodsByRestaurantIdAndCategoryId(restaurantId, categoryId)
-                .stream().filter(v -> v.name().toLowerCase().contains(query.toLowerCase())).collect(Collectors.toList());
+    public void onResume() {
+        super.onResume();
+        if (listView != null) loadItems();
+    }
 
-        updateList(newItems);
+    @Override
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
+                                    @Nullable ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+
+        if (menuInfo instanceof AdapterView.AdapterContextMenuInfo) {
+            selectedPosition = ((AdapterView.AdapterContextMenuInfo) menuInfo).position;
+        }
+
+        menu.add(Menu.NONE, MENU_EDIT_ID, Menu.NONE, "Editar");
+    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        if (selectedPosition < 0) return super.onContextItemSelected(item);
+
+        if (item.getItemId() == MENU_EDIT_ID) {
+            Fragment formFragment = onEditEntity(menuItems.get(selectedPosition));
+            if (editMenuItemListener != null) {
+                editMenuItemListener.onEditMenuItem(formFragment);
+            }
+            return true;
+        }
+
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
+    public void onSearch(String query) {
+        List<Food> filtered = repository.getAllFoodsByRestaurantIdAndCategoryId(restaurantId, categoryId);
+        filtered.removeIf(v -> !v.name().toLowerCase().contains(query.toLowerCase()));
+        updateList(filtered);
     }
 
     @Override
@@ -110,10 +151,32 @@ public class MenuItemListFragment extends Fragment implements Searchable {
         updateList(repository.getAllFoodsByRestaurantIdAndCategoryId(restaurantId, categoryId));
     }
 
+    @Override
+    public Fragment onCreateEntity() {
+        return MenuItemFormFragment.newInstance(restaurantId, categoryId);
+    }
+
+    @Override
+    public Fragment onEditEntity(Food item) {
+        return MenuItemFormFragment.newInstance(
+                item._id(), item.name(), item.price(), item.description(),
+                item.restaurantId(), item.categoryId());
+    }
+
+    @Override
+    public void onDeleteEntity(Food item) {
+    }
+
+    private void loadItems() {
+        menuItems = repository.getAllFoodsByRestaurantIdAndCategoryId(restaurantId, categoryId);
+        arrayAdapter = new MenuItemArrayAdapter(requireContext(), R.layout.menu_item_layout, menuItems);
+        listView.setAdapter(arrayAdapter);
+    }
+
     private void updateList(List<Food> list) {
+        menuItems = list;
         arrayAdapter.clear();
         arrayAdapter.addAll(list);
         arrayAdapter.notifyDataSetChanged();
     }
-
 }

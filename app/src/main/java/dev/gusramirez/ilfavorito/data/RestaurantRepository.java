@@ -199,6 +199,54 @@ public class RestaurantRepository {
         return "";
     }
 
+    public int addOneFood(Food food) throws Throwable {
+        SQLiteDatabase db = dbManager.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_NAME, food.name());
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_PRICE, food.price());
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_DESCRIPTION, food.description());
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_REST_ID, food.restaurantId());
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_CAT_ID, food.categoryId());
+
+        long newRowId = db.insert(EntityInitializer.FoodEntity.TABLE_NAME, null, values);
+        if (newRowId == -1) {
+            throw new Throwable("Algo salió mal, intente nuevamente.");
+        }
+        return (int) newRowId;
+    }
+
+    public void updateOneFood(Food food) throws Throwable {
+        SQLiteDatabase db = dbManager.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_NAME, food.name());
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_PRICE, food.price());
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_DESCRIPTION, food.description());
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_REST_ID, food.restaurantId());
+        values.put(EntityInitializer.FoodEntity.COL_FOOD_CAT_ID, food.categoryId());
+
+        int rows = db.update(
+                EntityInitializer.FoodEntity.TABLE_NAME,
+                values,
+                EntityInitializer.FoodEntity._ID + " = ?",
+                new String[]{String.valueOf(food._id())}
+        );
+        if (rows == 0) {
+            throw new Throwable("No se pudo actualizar el platillo.");
+        }
+    }
+
+    public void deleteOneFood(int id) throws Throwable {
+        SQLiteDatabase db = dbManager.getWritableDatabase();
+        int rows = db.delete(
+                EntityInitializer.FoodEntity.TABLE_NAME,
+                EntityInitializer.FoodEntity._ID + " = ?",
+                new String[]{String.valueOf(id)}
+        );
+        if (rows == 0) {
+            throw new Throwable("No se pudo eliminar el platillo.");
+        }
+    }
+
     public List<Food> getAllFoodsByRestaurantIdAndCategoryId(int restaurantId, int categoryId) {
         List<Food> list = new ArrayList<>();
         SQLiteDatabase db = dbManager.getReadableDatabase();
