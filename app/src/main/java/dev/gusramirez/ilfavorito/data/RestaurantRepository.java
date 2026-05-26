@@ -118,6 +118,38 @@ public class RestaurantRepository {
         return (int) newRowId;
     }
 
+    public void updateOneRestaurant(Restaurant restaurant) throws Throwable {
+        SQLiteDatabase db = dbManager.getWritableDatabase();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(EntityInitializer.RestaurantEntity.COL_REST_NAME, restaurant.name());
+
+        int rows = db.update(
+                EntityInitializer.RestaurantEntity.TABLE_NAME,
+                contentValues,
+                EntityInitializer.RestaurantEntity._ID + " = ?",
+                new String[]{String.valueOf(restaurant._id())}
+        );
+
+        if (rows == 0) {
+            throw new Throwable("No se pudo actualizar el restaurante.");
+        }
+    }
+
+    public void deleteOneRestaurant(int id) throws Throwable {
+        SQLiteDatabase db = dbManager.getWritableDatabase();
+
+        int rows = db.delete(
+                EntityInitializer.RestaurantEntity.TABLE_NAME,
+                EntityInitializer.RestaurantEntity._ID + " = ?",
+                new String[]{String.valueOf(id)}
+        );
+
+        if (rows == 0) {
+            throw new Throwable("No se pudo eliminar el restaurante.");
+        }
+    }
+
     public List<Category> getAllCategories() {
         List<Category> list = new ArrayList<>();
         SQLiteDatabase db = dbManager.getReadableDatabase();

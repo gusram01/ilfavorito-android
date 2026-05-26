@@ -55,14 +55,14 @@
     <com.google.android.material.button.MaterialButton
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Editar"
+        android:text="Actualizar"
         android:id="@+id/restaurantFormEditButton"
         />
 
     <com.google.android.material.button.MaterialButton
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Borrar"
+        android:text="Eliminar"
         android:id="@+id/restaurantFormDeleteButton"
         />
 

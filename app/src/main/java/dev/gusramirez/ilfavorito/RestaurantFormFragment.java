@@ -1,11 +1,8 @@
 package dev.gusramirez.ilfavorito;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -18,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -30,13 +28,17 @@ public class RestaurantFormFragment extends Fragment {
 
     public interface OnManageableEventListener {
         void onCreateItem();
+        void onEditItem();
+        void onDeleteItem();
     }
 
     private static final String RESTAURANT_NAME = "restaurantArg";
+    private static final String RESTAURANT_ID = "restaurantIdArg";
     private RestaurantRepository repository;
     private FragmentRestaurantFormBinding binding;
     private FragmentManager fragmentManager;
     private String restaurantName;
+    private int restaurantId = -1;
     private EditText inputName;
     private MaterialButton createButton;
     private MaterialButton editButton;
@@ -46,10 +48,11 @@ public class RestaurantFormFragment extends Fragment {
     private RestaurantFormFragment() {
     }
 
-    public static Fragment newInstance(String param1) {
+    public static Fragment newInstance(int id, String name) {
         RestaurantFormFragment fragment = new RestaurantFormFragment();
         Bundle args = new Bundle();
-        args.putString(RESTAURANT_NAME, param1);
+        args.putInt(RESTAURANT_ID, id);
+        args.putString(RESTAURANT_NAME, name);
         fragment.setArguments(args);
         return fragment;
     }
@@ -84,6 +87,7 @@ public class RestaurantFormFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             restaurantName = getArguments().getString(RESTAURANT_NAME);
+            restaurantId = getArguments().getInt(RESTAURANT_ID, -1);
         }
     }
 
@@ -109,35 +113,66 @@ public class RestaurantFormFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (inputName.getText() == null || inputName.getText().toString().isEmpty()) {
-                    Snackbar snack = Snackbar.make(getView(), "El nombre no puede estar vacio", BaseTransientBottomBar.LENGTH_SHORT);
-
-                    snack.setBackgroundTint(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark));
-                    snack.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white));
-                    snack.show();
+                    showError("El nombre no puede estar vacio");
                     return;
                 }
 
                 Restaurant restaurant = new Restaurant(null, inputName.getText().toString());
 
                 try {
-
                     repository.addOneRestaurant(restaurant);
-
                     listener.onCreateItem();
-
-
                 } catch (Throwable t) {
-                    Snackbar snack = Snackbar.make(getView(), t.getMessage(), BaseTransientBottomBar.LENGTH_SHORT);
+                    showError(t.getMessage());
+                }
+            }
+        });
 
-                    snack.setBackgroundTint(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark));
-                    snack.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white));
-                    snack.show();
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (inputName.getText() == null || inputName.getText().toString().isEmpty()) {
+                    showError("El nombre no puede estar vacio");
+                    return;
                 }
 
+                Restaurant updated = new Restaurant(restaurantId, inputName.getText().toString());
+
+                try {
+                    repository.updateOneRestaurant(updated);
+                    listener.onEditItem();
+                } catch (Throwable t) {
+                    showError(t.getMessage());
+                }
+            }
+        });
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Eliminar restaurante")
+                        .setMessage("¿Estás seguro de que deseas eliminar \"" + restaurantName + "\"?")
+                        .setNegativeButton("Cancelar", null)
+                        .setPositiveButton("Eliminar", (dialog, which) -> {
+                            try {
+                                repository.deleteOneRestaurant(restaurantId);
+                                listener.onDeleteItem();
+                            } catch (Throwable t) {
+                                showError(t.getMessage());
+                            }
+                        })
+                        .show();
             }
         });
 
         return binding.getRoot();
     }
 
+    private void showError(String message) {
+        Snackbar snack = Snackbar.make(requireView(), message, BaseTransientBottomBar.LENGTH_SHORT);
+        snack.setBackgroundTint(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark));
+        snack.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white));
+        snack.show();
+    }
 }

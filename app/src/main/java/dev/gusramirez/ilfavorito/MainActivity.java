@@ -247,6 +247,16 @@ public class MainActivity extends
                 .commit();
     }
 
+    @Override
+    public void onEditItem() {
+        fragmentManager.popBackStack();
+    }
+
+    @Override
+    public void onDeleteItem() {
+        fragmentManager.popBackStack();
+    }
+
     private void updateSearchVisibility() {
         if (searchItem == null) return;
         Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());

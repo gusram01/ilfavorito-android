@@ -172,7 +172,7 @@ public class RestaurantListFragment extends Fragment
 
     @Override
     public Fragment onEditEntity(Restaurant item) {
-        return RestaurantFormFragment.newInstance(item.name());
+        return RestaurantFormFragment.newInstance(item._id(), item.name());
     }
 
     @Override
