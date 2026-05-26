@@ -10,7 +10,9 @@ import androidx.fragment.app.Fragment;
 
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -34,8 +36,17 @@ public class RestaurantListFragment extends Fragment
         void onCategorySelected(int restaurantId, int targetTabIndex);
     }
 
+    public interface OnEditRestaurantListener {
+        void onEditRestaurant(Fragment destiny);
+    }
+
+    private static final int MENU_EDIT_ID = 1000;
+    private static final int SUBMENU_TITLE_ID=1001;
+
     private OnRestaurantSelectedListener restaurantSelectedListener;
     private OnCategorySelectedListener categorySelectedListener;
+    private OnEditRestaurantListener editRestaurantListener;
+    private int selectedPosition = -1;
     private RestaurantRepository repository;
     private FragmentRestaurantListBinding binding;
     private ListView listView;
@@ -57,6 +68,12 @@ public class RestaurantListFragment extends Fragment
             categorySelectedListener = (OnCategorySelectedListener) context;
         } else {
             throw new RuntimeException(context.toString() + " must implement OnCategorySelectedListener");
+        }
+
+        if (context instanceof OnEditRestaurantListener){
+            editRestaurantListener = (OnEditRestaurantListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnEditRestaurantListener");
         }
     }
 
@@ -98,20 +115,37 @@ public class RestaurantListFragment extends Fragment
     public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
+        if (menuInfo instanceof AdapterView.AdapterContextMenuInfo) {
+            selectedPosition = ((AdapterView.AdapterContextMenuInfo) menuInfo).position;
+        }
+
         List<Category> categories = repository.getAllCategories();
 
-        menu.add(0, 0, 0, categories.get(0).type());
-        menu.add(0, 1, 1, categories.get(1).type());
-        menu.add(0, 2, 2, categories.get(2).type());
+        menu.add(Menu.NONE, MENU_EDIT_ID, Menu.NONE, "Editar");
+        SubMenu submenu = menu.addSubMenu(Menu.NONE, SUBMENU_TITLE_ID, Menu.NONE, "Ir a la sección: ");
+        submenu.add(0, 0, 0, categories.get(0).type());
+        submenu.add(0, 1, 1, categories.get(1).type());
+        submenu.add(0, 2, 2, categories.get(2).type());
     }
 
     @Override
     public boolean onContextItemSelected(@NonNull MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        int idx = info.position;
+        if (selectedPosition < 0) return super.onContextItemSelected(item);
+
+        int itemId = item.getItemId();
+
+        if (itemId == MENU_EDIT_ID) {
+            Fragment formFragment = onEditEntity(restaurants.get(selectedPosition));
+            editRestaurantListener.onEditRestaurant(formFragment);
+            return true;
+        }
+
+        if(itemId == SUBMENU_TITLE_ID){
+            return false;
+        }
 
         if (categorySelectedListener != null) {
-            categorySelectedListener.onCategorySelected(restaurants.get(idx)._id(), item.getItemId());
+            categorySelectedListener.onCategorySelected(restaurants.get(selectedPosition)._id(), itemId);
             return true;
         }
 
@@ -137,8 +171,8 @@ public class RestaurantListFragment extends Fragment
     }
 
     @Override
-    public void onEditEntity(Restaurant item) {
-
+    public Fragment onEditEntity(Restaurant item) {
+        return RestaurantFormFragment.newInstance(item.name());
     }
 
     @Override

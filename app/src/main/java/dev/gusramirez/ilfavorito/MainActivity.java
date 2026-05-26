@@ -32,6 +32,7 @@ public class MainActivity extends
         RestaurantListFragment.OnRestaurantSelectedListener,
         MenuItemListFragment.OnMenuItemSelectedListener,
         RestaurantListFragment.OnCategorySelectedListener,
+        RestaurantListFragment.OnEditRestaurantListener,
         RestaurantFormFragment.OnManageableEventListener {
     private RestaurantRepository repository;
     private ActivityMainBinding binding;
@@ -45,7 +46,7 @@ public class MainActivity extends
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if(!isTaskRoot()){
+        if (!isTaskRoot()) {
             finish();
         }
 
@@ -68,7 +69,7 @@ public class MainActivity extends
             public void onBackStackChanged() {
                 boolean canGoBack = fragmentManager.getBackStackEntryCount() > 0;
 
-                if(getSupportActionBar() != null){
+                if (getSupportActionBar() != null) {
                     getSupportActionBar().setDisplayHomeAsUpEnabled(canGoBack);
                 }
 
@@ -104,14 +105,14 @@ public class MainActivity extends
         fragment.setArguments(args);
 
         fragmentManager.beginTransaction()
-                .replace(fragmentContainerView.getId(),fragment)
+                .replace(fragmentContainerView.getId(), fragment)
                 .setReorderingAllowed(true)
                 .addToBackStack(null)
                 .commit();
     }
 
     @Override
-    public void onCategorySelected(int restaurantId, int targetTabIndex){
+    public void onCategorySelected(int restaurantId, int targetTabIndex) {
         MenuCategoriesFragment fragment = new MenuCategoriesFragment();
 
 
@@ -121,7 +122,7 @@ public class MainActivity extends
         fragment.setArguments(args);
 
         fragmentManager.beginTransaction()
-                .replace(fragmentContainerView.getId(),fragment)
+                .replace(fragmentContainerView.getId(), fragment)
                 .setReorderingAllowed(true)
                 .addToBackStack(null)
                 .commit();
@@ -131,7 +132,7 @@ public class MainActivity extends
     public void onMenuItemSelected(Food item) {
         String type = repository.getCategoryTypeById(item.categoryId());
 
-        int imgResourceId = switch (type){
+        int imgResourceId = switch (type) {
             case "food":
                 yield R.mipmap.ic_food_placeholder;
             case "drink":
@@ -160,7 +161,7 @@ public class MainActivity extends
     public boolean onSupportNavigateUp() {
         Boolean canGoBack = fragmentManager.getBackStackEntryCount() > 0;
 
-        if(canGoBack){
+        if (canGoBack) {
             fragmentManager.popBackStack();
             return true;
         }
@@ -182,7 +183,8 @@ public class MainActivity extends
             public boolean onMenuItemClick(@NonNull MenuItem item) {
                 Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
 
-                if(current instanceof Manageable<?>){
+
+                if (current instanceof Manageable<?>) {
                     Fragment frag = ((Manageable<?>) current).onCreateEntity();
                     fragmentManager.beginTransaction()
                             .replace(fragmentContainerView.getId(), frag)
@@ -201,7 +203,7 @@ public class MainActivity extends
             @Override
             public boolean onQueryTextSubmit(String query) {
                 Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
-                if(current instanceof Searchable ){
+                if (current instanceof Searchable) {
                     ((Searchable) current).onSearch(query);
                 }
 
@@ -210,9 +212,9 @@ public class MainActivity extends
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if(newText.isEmpty()){
+                if (newText.isEmpty()) {
                     Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
-                    if(current instanceof Searchable ){
+                    if (current instanceof Searchable) {
                         ((Searchable) current).onSearchCleared();
                     }
                 }
@@ -226,7 +228,17 @@ public class MainActivity extends
     }
 
     @Override
-    public void onCreateItem(){
+    public void onEditRestaurant(Fragment destiny) {
+        fragmentManager.beginTransaction()
+                .replace(fragmentContainerView.getId(), destiny)
+                .setReorderingAllowed(true)
+                .addToBackStack(null)
+                .commit();
+
+    }
+
+    @Override
+    public void onCreateItem() {
         RestaurantListFragment fragment = new RestaurantListFragment();
         fragmentManager.beginTransaction()
                 .replace(fragmentContainerView.getId(), fragment)
@@ -241,7 +253,7 @@ public class MainActivity extends
         searchItem.setVisible(current instanceof Searchable);
     }
 
-    private void updateNewButtonVisibility(){
+    private void updateNewButtonVisibility() {
         Fragment current = fragmentManager.findFragmentById(fragmentContainerView.getId());
         newItemButton.setVisible(current instanceof Manageable<?>);
     }

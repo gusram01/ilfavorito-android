@@ -100,6 +100,7 @@ public class RestaurantFormFragment extends Fragment {
 
         inputName.setText(restaurantName);
 
+        createButton.setVisibility(restaurantName != null ? View.GONE : View.VISIBLE);
         editButton.setVisibility(restaurantName != null ? View.VISIBLE : View.GONE);
         deleteButton.setVisibility(restaurantName != null ? View.VISIBLE : View.GONE);
 
@@ -138,4 +139,5 @@ public class RestaurantFormFragment extends Fragment {
 
         return binding.getRoot();
     }
+
 }
